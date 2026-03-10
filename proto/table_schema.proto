@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package ocaml_data_transform;
+
+import "data_types.proto";
+
+// SingleFieldType — represents one field in a table
+// Uses oneof to hold the typed value
+message SingleFieldType {
+  string type_id = 1;
+
+  oneof value {
+    string string_value = 2;
+    double number_value = 3;
+    bool bool_value = 4;
+  }
+
+  // For array values (e.g., MultipleCheckbox selected_keys)
+  repeated string string_list_value = 5;
+
+  // For compound types — subfields as nested SingleFieldType
+  map<string, SingleFieldType> value_sub_fields = 6;
+  repeated string sub_field_keys_in_order = 7;
+
+  // Meta
+  string label = 8;
+
+  // Checkbox/Radio metadata
+  repeated string all_option_keys_in_order = 9;
+  repeated string all_option_labels_in_order = 10;
+}
+
+// Group of fields within a table
+message FieldGroup {
+  string label = 1;
+  int32 start_idx = 2;
+  int32 end_idx = 3;
+}
+
+// TableSchema — the top-level table structure
+message TableSchema {
+  map<string, SingleFieldType> fields_map = 1;
+  repeated string field_keys_in_order = 2;
+  string label = 3;
+  repeated FieldGroup groups = 4;
+}
