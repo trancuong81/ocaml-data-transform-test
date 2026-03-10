@@ -1,8 +1,13 @@
 module M = Ocaml_data_transform.Mappings
 module EM = Ocaml_data_transform.Example_mappings
 
+let find_fixture name =
+  match Sys.getenv_opt "DUNE_SOURCEROOT" with
+  | Some root -> Filename.concat (Filename.concat root "test/fixtures") name
+  | None -> Filename.concat "test/fixtures" name
+
 let test_values_json_pipeline () =
-  let values_path = "/Users/cuongtran/w/jsonata/values.json" in
+  let values_path = find_fixture "values.json" in
   if not (Sys.file_exists values_path) then
     Alcotest.skip ()
   else begin
@@ -12,9 +17,8 @@ let test_values_json_pipeline () =
     (match result with
      | `Assoc _ -> ()
      | _ -> Alcotest.fail "Expected JSON object output");
-    let output_path = "/tmp/ocaml_transform_output.json" in
-    Yojson.Safe.to_file ~std:true output_path result;
-    Printf.printf "Output written to %s\n%!" output_path
+    Printf.printf "Integration test passed with %d output keys\n%!"
+      (match result with `Assoc fields -> List.length fields | _ -> 0)
   end
 
 let suite = [

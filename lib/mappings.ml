@@ -39,7 +39,7 @@ let textbox_mapping ~name ~input_paths ~output_path : mapping =
       | `Assoc fields ->
         List.filter_map
           (fun (_alias, v) ->
-            match JP.get_path v ["rawValue"; "value"] with
+            match JP.get_path v ["value"] with
             | Some (`String s) when s <> "" -> Some s
             | _ -> None)
           fields
@@ -47,7 +47,7 @@ let textbox_mapping ~name ~input_paths ~output_path : mapping =
     in
     let joined = String.concat "" values in
     build_output
-      (`Assoc [("rawValue", `Assoc [("value", `String joined)])])
+      (`Assoc [("value", `String joined)])
       output_path
   in
   { name; input_paths; output_path; transform }

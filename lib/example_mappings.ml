@@ -30,7 +30,7 @@ let commitment_mapping () =
   M.textbox_mapping
     ~name:"sf_Agreement_null_Commitment_c"
     ~input_paths:[
-      ("subdoc", ["subdoc"; "lp_signatory"; "rawValue"; "asa_commitment_amount"]);
+      ("subdoc", ["subdoc"; "lp_signatory"; "asa_commitment_amount"]);
     ]
     ~output_path:["sf_Agreement_null_Commitment_c"]
 
@@ -49,9 +49,9 @@ let regulated_status_mapping () =
   M.checkbox_mapping
     ~name:"sf_Account_SubscriptionInvestor_WLC_Publicly_Listed_On_A_Stock_Exchange_c"
     ~input_paths:[
-      ("subdoc", ["subdoc"; "luxsentity_regulatedstatus_part2_duediligencequestionnaire"; "rawValue"]);
+      ("subdoc", ["subdoc"; "luxsentity_regulatedstatus_part2_duediligencequestionnaire"]);
     ]
-    ~output_path:["sf_Account_SubscriptionInvestor_WLC_Publicly_Listed_On_A_Stock_Exchange_c"; "rawValue"]
+    ~output_path:["sf_Account_SubscriptionInvestor_WLC_Publicly_Listed_On_A_Stock_Exchange_c"]
     ~option_map:[
       ("yes_luxsentity_regulatedstatus_part2_duediligencequestionnaire", "true");
       ("no_luxsentity_regulatedstatus_part2_duediligencequestionnaire", "false");
@@ -61,10 +61,10 @@ let international_supplements_mapping () =
   M.checkbox_mapping
     ~name:"sf_Agreement_null_WLC_International_Supplements_c"
     ~input_paths:[
-      ("subdoc_indi", ["subdoc"; "indi_internationalsupplements_part1_duediligencequestionnaire"; "rawValue"]);
-      ("subdoc_entity", ["subdoc"; "entity_internationalsupplements_part1_duediligencequestionnaire"; "rawValue"]);
+      ("subdoc_indi", ["subdoc"; "indi_internationalsupplements_part1_duediligencequestionnaire"]);
+      ("subdoc_entity", ["subdoc"; "entity_internationalsupplements_part1_duediligencequestionnaire"]);
     ]
-    ~output_path:["sf_Agreement_null_WLC_International_Supplements_c"; "rawValue"]
+    ~output_path:["sf_Agreement_null_WLC_International_Supplements_c"]
     ~option_map:[
       ("eea_indi_internationalsupplements_part1_duediligencequestionnaire", "European Economic Area - Supplement");
       ("uk_indi_internationalsupplements_part1_duediligencequestionnaire", "United Kingdom - Supplement");
@@ -86,8 +86,8 @@ let signer_name_mapping () =
   M.custom_mapping
     ~name:"sf_Agreement_null_Signer_Name"
     ~input_paths:[
-      ("subdoc_ind", ["subdoc"; "lp_signatory"; "rawValue"; "individual_subscribername_signaturepage"]);
-      ("subdoc_ent", ["subdoc"; "lp_signatory"; "rawValue"; "entity_authorizedname_signaturepage"]);
+      ("subdoc_ind", ["subdoc"; "lp_signatory"; "individual_subscribername_signaturepage"]);
+      ("subdoc_ent", ["subdoc"; "lp_signatory"; "entity_authorizedname_signaturepage"]);
     ]
     ~output_path:[]
     ~transform_fn:(fun input ->
@@ -96,7 +96,7 @@ let signer_name_mapping () =
         | `Assoc fields ->
           List.filter_map
             (fun (_alias, v) ->
-              match JP.get_path v ["rawValue"; "value"] with
+              match JP.get_path v ["value"] with
               | Some (`String s) when s <> "" -> Some s
               | _ -> None)
             fields
@@ -106,22 +106,22 @@ let signer_name_mapping () =
       let parts = split_name fullname in
       `Assoc [
         ("sf_Agreement_null_Signer_FirstName",
-         `Assoc [("rawValue", `Assoc [("value", `String parts.first_name)])]);
+         `Assoc [("value", `String parts.first_name)]);
         ("sf_Agreement_null_Signer_MiddleName",
-         `Assoc [("rawValue", `Assoc [("value", `String parts.middle_name)])]);
+         `Assoc [("value", `String parts.middle_name)]);
         ("sf_Agreement_null_Signer_LastName",
-         `Assoc [("rawValue", `Assoc [("value", `String parts.last_name)])]);
+         `Assoc [("value", `String parts.last_name)]);
       ])
 
 let w9_tin_type_mapping () =
   M.custom_mapping
     ~name:"sf_TaxForm_W9_US_TIN_Type_c"
     ~input_paths:[
-      ("w9_ssn", ["subdoc"; "w9"; "w9_parti_ssn1"; "rawValue"]);
-      ("w9_ein", ["subdoc"; "w9"; "w9_parti_ein1"; "rawValue"]);
-      ("w9_line2", ["subdoc"; "w9"; "w9_line2"; "rawValue"]);
+      ("w9_ssn", ["subdoc"; "w9"; "w9_parti_ssn1"]);
+      ("w9_ein", ["subdoc"; "w9"; "w9_parti_ein1"]);
+      ("w9_line2", ["subdoc"; "w9"; "w9_line2"]);
     ]
-    ~output_path:["sf_TaxForm_W9_US_TIN_Type_c"; "rawValue"]
+    ~output_path:["sf_TaxForm_W9_US_TIN_Type_c"]
     ~transform_fn:(fun input ->
       let w9_line2_value =
         match input with

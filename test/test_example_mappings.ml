@@ -27,11 +27,11 @@ let test_split_name_single () =
 
 let test_commitment_mapping () =
   let input = Yojson.Safe.from_string
-    {|{"subdoc": {"lp_signatory": {"rawValue": {"asa_commitment_amount": {"rawValue": {"value": "5000000"}}}}}}|}
+    {|{"subdoc": {"lp_signatory": {"asa_commitment_amount": {"value": "5000000"}}}}|}
   in
   let all = EM.all_mappings () in
   let result = M.transform_all all input in
-  let value = JP.get_string result ["sf_Agreement_null_Commitment_c"; "rawValue"; "value"] in
+  let value = JP.get_string result ["sf_Agreement_null_Commitment_c"; "value"] in
   Alcotest.(check (option string)) "commitment" (Some "5000000") value
 
 let suite = [
