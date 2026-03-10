@@ -3,4 +3,6 @@ let () =
     (Test_schema.suite
      @ Test_protobuf.suite
      @ Test_json_path.suite
-     @ Test_transform_utils.suite)
+     @ Test_transform_utils.suite
+     @ Test_mappings.suite
+     @ Test_example_mappings.suite)
