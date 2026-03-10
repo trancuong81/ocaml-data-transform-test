@@ -1,3 +1,17 @@
 (library
  (name ocaml_data_transform)
- (libraries yojson re))
+ (libraries yojson re pbrt pbrt_yojson))
+
+; Generate OCaml from data_types.proto
+(rule
+ (targets data_types.ml data_types.mli)
+ (deps ../proto/data_types.proto)
+ (action
+  (run ocaml-protoc --binary --yojson --ml_out=. %{deps})))
+
+; Generate OCaml from table_schema.proto
+(rule
+ (targets table_schema.ml table_schema.mli)
+ (deps ../proto/table_schema.proto ../proto/data_types.proto)
+ (action
+  (run ocaml-protoc --binary --yojson -I ../proto --ml_out=. ../proto/table_schema.proto)))

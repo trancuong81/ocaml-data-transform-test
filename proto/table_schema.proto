@@ -4,6 +4,12 @@ package ocaml_data_transform;
 
 import "data_types.proto";
 
+// Key-value entry for field maps (workaround for map<> yojson codegen bug)
+message SingleFieldEntry {
+  string key = 1;
+  SingleFieldType value = 2;
+}
+
 // SingleFieldType — represents one field in a table
 // Uses oneof to hold the typed value
 message SingleFieldType {
@@ -18,8 +24,8 @@ message SingleFieldType {
   // For array values (e.g., MultipleCheckbox selected_keys)
   repeated string string_list_value = 5;
 
-  // For compound types — subfields as nested SingleFieldType
-  map<string, SingleFieldType> value_sub_fields = 6;
+  // For compound types — subfields as nested entries
+  repeated SingleFieldEntry value_sub_fields = 6;
   repeated string sub_field_keys_in_order = 7;
 
   // Meta
@@ -39,7 +45,7 @@ message FieldGroup {
 
 // TableSchema — the top-level table structure
 message TableSchema {
-  map<string, SingleFieldType> fields_map = 1;
+  repeated SingleFieldEntry fields_map = 1;
   repeated string field_keys_in_order = 2;
   string label = 3;
   repeated FieldGroup groups = 4;
