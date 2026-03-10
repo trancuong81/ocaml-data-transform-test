@@ -1,0 +1,115 @@
+module SMap = Map.Make (String)
+
+type type_constants = {
+  type_id : string;
+  regex : string option;
+  format_patterns : string list;
+  options : string list;
+  min_value : float option;
+  max_value : float option;
+  sub_field_keys_in_order : string list;
+}
+
+type data_type_constants = type_constants SMap.t
+
+type table_schema_constants = {
+  all_type_ids : string list;
+  single_value_type_ids : string list;
+  compound_type_ids : string list;
+}
+
+let json_string_list json =
+  let open Yojson.Safe.Util in
+  json |> to_list |> List.map to_string
+
+let parse_type_constants (json : Yojson.Safe.t) : type_constants =
+  let open Yojson.Safe.Util in
+  {
+    type_id = json |> member "typeId" |> to_string;
+    regex = json |> member "regex" |> to_string_option;
+    format_patterns =
+      (match json |> member "formatPatterns" with
+       | `Null -> []
+       | j -> json_string_list j);
+    options =
+      (match json |> member "options" with
+       | `Null -> []
+       | j -> json_string_list j);
+    min_value =
+      (match json |> member "min" with
+       | `Null -> None
+       | `Int n -> Some (Float.of_int n)
+       | `Float f -> Some f
+       | _ -> None);
+    max_value =
+      (match json |> member "max" with
+       | `Null -> None
+       | `Int n -> Some (Float.of_int n)
+       | `Float f -> Some f
+       | _ -> None);
+    sub_field_keys_in_order =
+      (match json |> member "subFieldKeysInOrder" with
+       | `Null -> []
+       | j -> json_string_list j);
+  }
+
+(* Locate proto/ directory. During dune runtest, cwd is _build/default/test/
+   so we need to walk up to find the project root. *)
+let find_proto_dir () =
+  (* Prefer DUNE_SOURCEROOT when available — dune sets this and it always
+     points to the real source tree (not _build/) where JSON files live. *)
+  match Sys.getenv_opt "DUNE_SOURCEROOT" with
+  | Some root ->
+    let dir = Filename.concat root "proto" in
+    if Sys.file_exists dir && Sys.is_directory dir then dir
+    else failwith ("DUNE_SOURCEROOT/proto not found: " ^ dir)
+  | None ->
+    let candidates =
+      [
+        "proto";
+        "../proto";
+        "../../proto";
+        "../../../proto";
+        Filename.concat (Sys.getcwd ()) "proto";
+      ]
+    in
+    (match
+       List.find_opt (fun d -> Sys.file_exists d && Sys.is_directory d) candidates
+     with
+     | Some dir -> dir
+     | None ->
+       failwith
+         "Cannot find proto/ directory. Set DUNE_SOURCEROOT or run from \
+          project root.")
+
+let load_data_type_constants () : data_type_constants =
+  let path = Filename.concat (find_proto_dir ()) "data_types_constants.json" in
+  let json = Yojson.Safe.from_file path in
+  let open Yojson.Safe.Util in
+  json |> to_assoc
+  |> List.fold_left
+       (fun acc (key, value) -> SMap.add key (parse_type_constants value) acc)
+       SMap.empty
+
+let find_type_constants (m : data_type_constants) (type_id : string) =
+  SMap.find_opt type_id m
+
+let has_regex (tc : type_constants) = Option.is_some tc.regex
+let type_count (m : data_type_constants) = SMap.cardinal m
+
+let load_table_schema_constants () : table_schema_constants =
+  let path =
+    Filename.concat (find_proto_dir ()) "table_schema_constants.json"
+  in
+  let json = Yojson.Safe.from_file path in
+  let open Yojson.Safe.Util in
+  {
+    all_type_ids = json |> member "allTypeIds" |> json_string_list;
+    single_value_type_ids =
+      json |> member "singleValueTypeIds" |> json_string_list;
+    compound_type_ids = json |> member "compoundTypeIds" |> json_string_list;
+  }
+
+let all_type_ids (tsc : table_schema_constants) = tsc.all_type_ids
+let single_value_type_ids (tsc : table_schema_constants) = tsc.single_value_type_ids
+let compound_type_ids (tsc : table_schema_constants) = tsc.compound_type_ids
