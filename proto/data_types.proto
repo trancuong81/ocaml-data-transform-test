@@ -1,0 +1,276 @@
+syntax = "proto3";
+
+package ocaml_data_transform;
+
+// === Simple Types (structurally merged) ===
+
+// Covers 21 CUE types: String, Ssn, Ein, Aba, Itin, Swift, Iban, Giin,
+// UsZip, Email, PhoneFaxString, IsoCountryCode, IsoCurrencyCode,
+// CountryString, StateProvince, City, NumberAndStreet, PostalZipCode,
+// MoneyString, DateTimeString, TimeZoneOffset
+message StringType {
+  string type_id = 1;
+  string value = 2;
+  string regex = 3;
+  repeated string format_patterns = 4;
+}
+
+// Covers 4 CUE types: Integer, Float, Percentage, Year
+message NumberType {
+  string type_id = 1;
+  double value = 2;
+  int32 decimal_places = 3;
+  double min_value = 4;
+  double max_value = 5;
+}
+
+message BooleanType {
+  string type_id = 1;
+  bool value = 2;
+}
+
+// Covers 3 CUE types: ShareClass, TransactionType, SubscriptionStatus
+message EnumType {
+  string type_id = 1;
+  string value = 2;
+  repeated string options = 3;
+}
+
+message MultipleCheckboxType {
+  string type_id = 1;
+  repeated string selected_keys = 2;
+  repeated string all_option_keys_in_order = 3;
+  repeated string all_option_labels_in_order = 4;
+}
+
+message RadioGroupType {
+  string type_id = 1;
+  string selected_key = 2;
+  repeated string all_option_keys_in_order = 3;
+  repeated string all_option_labels_in_order = 4;
+}
+
+// === Compound Types (one message each) ===
+
+// PhoneFax compound — CUE line 117
+message PhoneFaxType {
+  string type_id = 1;
+  string country_code = 2;
+  string area_code = 3;
+  string subscriber_number = 4;
+  repeated string sub_field_keys_in_order = 5;
+}
+
+// DateTime compound — CUE line 146
+message DateTimeType {
+  string type_id = 1;
+  int64 epoch_ms = 2;
+  string zone_offset = 3;
+  repeated string sub_field_keys_in_order = 4;
+}
+
+// Money compound — CUE line 213
+message MoneyType {
+  string type_id = 1;
+  double amount = 2;
+  int32 amount_decimal_places = 3;
+  string iso_currency_code = 4;
+  repeated string sub_field_keys_in_order = 5;
+}
+
+// Address compound — CUE line 325
+message AddressType {
+  string type_id = 1;
+  string number_and_street = 2;
+  string city = 3;
+  string state_province = 4;
+  string country = 5;
+  string postal_zip_code = 6;
+  string full_address = 7;
+  repeated string sub_field_keys_in_order = 8;
+}
+
+// IndividualName — CUE line 340
+message IndividualNameType {
+  string type_id = 1;
+  string prefix_name = 2;
+  string first_name = 3;
+  string middle_name = 4;
+  string last_name = 5;
+  string suffix_name = 6;
+  string full_name = 7;
+  string preferred_name = 8;
+  string job_title = 9;
+  repeated string sub_field_keys_in_order = 10;
+}
+
+// Country compound — CUE line 278
+message CountryType {
+  string type_id = 1;
+  string country_name = 2;
+  string iso_country_code = 3;
+  repeated string sub_field_keys_in_order = 4;
+}
+
+// BaseContact — CUE line 358
+message BaseContactType {
+  string type_id = 1;
+  string prefix_name = 2;
+  string first_name = 3;
+  string middle_name = 4;
+  string last_name = 5;
+  string suffix_name = 6;
+  string full_name = 7;
+  string preferred_name = 8;
+  string job_title = 9;
+  string email = 10;
+  string phone = 11;
+  string fax = 12;
+  repeated string sub_field_keys_in_order = 13;
+}
+
+// Signatory — CUE line 421
+message SignatoryType {
+  string type_id = 1;
+  string number_and_street = 2;
+  string city = 3;
+  string state_province = 4;
+  string country = 5;
+  string postal_zip_code = 6;
+  string full_address = 7;
+  string name = 8;
+  string date = 9;
+  string title = 10;
+  string phone = 11;
+  string email = 12;
+  string signer_role = 13;
+  repeated string sub_field_keys_in_order = 14;
+}
+
+// BankInfo — CUE line 443
+message BankInfoType {
+  string type_id = 1;
+  string bank_name = 2;
+  string bank_location = 3;
+  string aba = 4;
+  string swift = 5;
+  repeated string sub_field_keys_in_order = 6;
+}
+
+// BankAccountInfo — CUE line 456
+message BankAccountInfoType {
+  string type_id = 1;
+  string bank_name = 2;
+  string bank_location = 3;
+  string aba = 4;
+  string swift = 5;
+  string account_name = 6;
+  string account_number = 7;
+  string iban = 8;
+  string further_credit_name = 9;
+  string further_credit_account = 10;
+  string correspondent_bank_account = 11;
+  repeated string sub_field_keys_in_order = 12;
+}
+
+// WireInstructions — CUE line 475
+message WireInstructionsType {
+  string type_id = 1;
+  string bank_name = 2;
+  string bank_location = 3;
+  string aba = 4;
+  string swift = 5;
+  string account_name = 6;
+  string account_number = 7;
+  string iban = 8;
+  string further_credit_name = 9;
+  string further_credit_account = 10;
+  string correspondent_bank_account = 11;
+  string attention = 12;
+  repeated string sub_field_keys_in_order = 13;
+}
+
+// BrokerageFirm — CUE line 495
+message BrokerageFirmType {
+  string type_id = 1;
+  string firm_name = 2;
+  string firm_office_branch_location = 3;
+  repeated string sub_field_keys_in_order = 4;
+}
+
+// BrokerageAccount — CUE line 506
+message BrokerageAccountType {
+  string type_id = 1;
+  string firm_name = 2;
+  string firm_office_branch_location = 3;
+  string dtc_number = 4;
+  string crest_participant_id = 5;
+  string bic_code = 6;
+  string beneficiary_account_number = 7;
+  string beneficiary_account_name = 8;
+  string intermediary_account_name = 9;
+  string intermediary_account_number = 10;
+  string intermediary_bic_code = 11;
+  string securities_settlement_instructions = 12;
+  string attention = 13;
+  repeated string sub_field_keys_in_order = 14;
+}
+
+// ServiceContactPoint — CUE line 527
+message ServiceContactPointType {
+  string type_id = 1;
+  string name = 2;
+  string office_branch_location = 3;
+  string phone = 4;
+  string email = 5;
+  repeated string sub_field_keys_in_order = 6;
+}
+
+// SubmissionContact — CUE line 378
+// Largest compound type with 33 subfields
+message SubmissionContactType {
+  string type_id = 1;
+  string prefix_name = 2;
+  string first_name = 3;
+  string middle_name = 4;
+  string last_name = 5;
+  string suffix_name = 6;
+  string full_name = 7;
+  string preferred_name = 8;
+  string job_title = 9;
+  string email = 10;
+  string phone = 11;
+  string fax = 12;
+  MultipleCheckboxType type_of_correspondences = 13;
+  MultipleCheckboxType contact_types = 14;
+  MultipleCheckboxType contact_roles = 15;
+  string custom_id = 16;
+  string address_number_and_street = 17;
+  string address_city = 18;
+  string address_state_province = 19;
+  string address_country = 20;
+  string address_postal_zip_code = 21;
+  string address_full_address = 22;
+  string relationship_with_primary = 23;
+  string occupation = 24;
+  string company_name = 25;
+  string company_address_number_and_street = 26;
+  string company_address_city = 27;
+  string company_address_state_province = 28;
+  string company_address_country = 29;
+  string company_address_postal_zip_code = 30;
+  string company_address_full_address = 31;
+  string specified_company_org_unit = 32;
+  string individual_email = 33;
+  string individual_phone = 34;
+  string individual_fax = 35;
+  repeated string sub_field_keys_in_order = 36;
+}
+
+// CustomCompoundType — CUE line 540
+// Flexible compound with arbitrary subfields — represented as JSON
+message CustomCompoundType {
+  string type_id = 1;
+  string value_sub_fields_json = 2;
+  repeated string sub_field_keys_in_order = 3;
+}
