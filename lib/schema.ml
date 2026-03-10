@@ -12,12 +12,6 @@ type type_constants = {
 
 type data_type_constants = type_constants SMap.t
 
-type table_schema_constants = {
-  all_type_ids : string list;
-  single_value_type_ids : string list;
-  compound_type_ids : string list;
-}
-
 let json_string_list json =
   let open Yojson.Safe.Util in
   json |> to_list |> List.map to_string
@@ -97,19 +91,3 @@ let find_type_constants (m : data_type_constants) (type_id : string) =
 let has_regex (tc : type_constants) = Option.is_some tc.regex
 let type_count (m : data_type_constants) = SMap.cardinal m
 
-let load_table_schema_constants () : table_schema_constants =
-  let path =
-    Filename.concat (find_proto_dir ()) "table_schema_constants.json"
-  in
-  let json = Yojson.Safe.from_file path in
-  let open Yojson.Safe.Util in
-  {
-    all_type_ids = json |> member "allTypeIds" |> json_string_list;
-    single_value_type_ids =
-      json |> member "singleValueTypeIds" |> json_string_list;
-    compound_type_ids = json |> member "compoundTypeIds" |> json_string_list;
-  }
-
-let all_type_ids (tsc : table_schema_constants) = tsc.all_type_ids
-let single_value_type_ids (tsc : table_schema_constants) = tsc.single_value_type_ids
-let compound_type_ids (tsc : table_schema_constants) = tsc.compound_type_ids
