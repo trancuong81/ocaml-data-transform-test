@@ -10,8 +10,13 @@
   (run ocaml-protoc --binary --yojson --ml_out=. %{deps})))
 
 ; Generate OCaml from table_schema.proto
+; Note: ocaml-protoc has a yojson codegen bug with map<> fields —
+; it emits "assoc :=\n  let assoc_field" instead of "assoc := (\n  let assoc_field".
+; The sed step patches the missing opening paren.
 (rule
  (targets table_schema.ml table_schema.mli)
  (deps ../proto/table_schema.proto ../proto/data_types.proto)
  (action
-  (run ocaml-protoc --binary --yojson -I ../proto --ml_out=. ../proto/table_schema.proto)))
+  (progn
+   (run ocaml-protoc --binary --yojson -I ../proto --ml_out=. ../proto/table_schema.proto)
+   (run sed -i "" "s/assoc :=$/assoc := (/" table_schema.ml))))
