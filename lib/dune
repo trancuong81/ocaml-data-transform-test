@@ -3,11 +3,15 @@
  (libraries yojson re pbrt pbrt_yojson))
 
 ; Generate OCaml from data_types.proto
+; Note: ocaml-protoc has a yojson codegen bug with map<> fields —
+; it emits "assoc :=" instead of "assoc := (" before let bindings.
 (rule
  (targets data_types.ml data_types.mli)
  (deps ../proto/data_types.proto)
  (action
-  (run ocaml-protoc --binary --yojson --ml_out=. %{deps})))
+  (progn
+   (run ocaml-protoc --binary --yojson --ml_out=. %{deps})
+   (run sed -i "" "s/assoc :=$/assoc := (/" data_types.ml))))
 
 ; Generate OCaml from table_schema.proto
 ; Note: ocaml-protoc has a yojson codegen bug with map<> fields —

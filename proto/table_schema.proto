@@ -4,30 +4,37 @@ package ocaml_data_transform;
 
 import "data_types.proto";
 
-// SingleFieldType — represents one field in a table
-// Uses oneof to hold the typed value
+// SingleFieldType — represents one field in a table schema.
+// The value is one of the defined data types.
 message SingleFieldType {
-  string type_id = 1;
-
   oneof value {
-    string string_value = 2;
-    double number_value = 3;
-    bool bool_value = 4;
+    // Simple types
+    StringType string_type = 1;
+    NumberType number_type = 2;
+    BooleanType boolean_type = 3;
+    EnumType enum_type = 4;
+    MultipleCheckboxType multiple_checkbox_type = 5;
+    RadioGroupType radio_group_type = 6;
+    // Named compound types
+    PhoneFaxType phone_fax_type = 7;
+    DateTimeType date_time_type = 8;
+    MoneyType money_type = 9;
+    AddressType address_type = 10;
+    IndividualNameType individual_name_type = 11;
+    CountryType country_type = 12;
+    BaseContactType base_contact_type = 13;
+    SubmissionContactType submission_contact_type = 14;
+    SignatoryType signatory_type = 15;
+    BankInfoType bank_info_type = 16;
+    BankAccountInfoType bank_account_info_type = 17;
+    WireInstructionsType wire_instructions_type = 18;
+    BrokerageFirmType brokerage_firm_type = 19;
+    BrokerageAccountType brokerage_account_type = 20;
+    ServiceContactPointType service_contact_point_type = 21;
+    // Flexible compound
+    CustomCompoundType custom_compound_type = 22;
   }
-
-  // For array values (e.g., MultipleCheckbox selected_keys)
-  repeated string string_list_value = 5;
-
-  // For compound types — subfields as map (order in sub_field_keys_in_order)
-  map<string, SingleFieldType> value_sub_fields = 6;
-  repeated string sub_field_keys_in_order = 7;
-
-  // Meta
-  string label = 8;
-
-  // Checkbox/Radio metadata
-  repeated string all_option_keys_in_order = 9;
-  repeated string all_option_labels_in_order = 10;
+  string label = 23;
 }
 
 // Group of fields within a table
