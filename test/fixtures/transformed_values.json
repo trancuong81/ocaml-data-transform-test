@@ -1,16 +1,41 @@
 {
-  "sf_Agreement_null_Commitment_c": { "value": "75,000,000" },
-  "sf_Account_SubscriptionInvestor_Name": {
+  "sfAgreementNullCommitmentC": {
+    "typeId": "Money",
+    "valueSubFields": {
+      "amount": {
+        "typeId": "Number",
+        "value": 75000000.0
+      }
+    }
+  },
+  "sfAccountSubscriptionInvestorName": {
+    "typeId": "String",
     "value": "The Lincoln National Life Insurance Company"
   },
-  "sf_Account_SubscriptionInvestor_WLC_Publicly_Listed_On_A_Stock_Exchange_c": {
-    "selectedKeys": [ "true" ]
+  "sfAccountSubscriptionInvestorWlcPubliclyListedOnAStockExchangeC": {
+    "typeId": "RadioGroup",
+    "selectedKey": "true"
   },
-  "sf_Agreement_null_WLC_International_Supplements_c": {
-    "selectedKeys": [ "No Supplement" ]
+  "sfAgreementNullWlcInternationalSupplementsC": {
+    "typeId": "MultipleCheckbox",
+    "selectedKeys": [
+      "No Supplement"
+    ]
   },
-  "sf_Agreement_null_Signer_FirstName": { "value": "Catherine" },
-  "sf_Agreement_null_Signer_MiddleName": { "value": "L" },
-  "sf_Agreement_null_Signer_LastName": { "value": "Ziobro" },
-  "sf_TaxForm_W9_US_TIN_Type_c": { "value": "EIN" }
+  "sfAgreementNullSignerFirstName": {
+    "typeId": "String",
+    "value": "Catherine"
+  },
+  "sfAgreementNullSignerMiddleName": {
+    "typeId": "String",
+    "value": "L"
+  },
+  "sfAgreementNullSignerLastName": {
+    "typeId": "String",
+    "value": "Ziobro"
+  },
+  "sfTaxFormW9UsTinTypeC": {
+    "typeId": "RadioGroup",
+    "selectedKey": "EIN"
+  }
 }

@@ -1,47 +1,70 @@
 {
-  "subdoc": {
-    "lp_signatory": {
-      "asa_commitment_amount": {
+  "lpSignatory": {
+    "typeId": "CustomCompound",
+    "valueSubFields": {
+      "asaCommitmentAmount": {
         "typeId": "String",
         "value": "75,000,000"
       },
-      "individual_subscribername_signaturepage": {
+      "individualSubscribernameSignaturepage": {
         "typeId": "String",
         "value": ""
       },
-      "entity_authorizedname_signaturepage": {
+      "entityAuthorizednameSignaturepage": {
         "typeId": "String",
         "value": "Catherine L Ziobro"
       }
     },
-    "asa_fullname_investorname_amlquestionnaire": {
-      "typeId": "String",
-      "value": ""
+    "subFieldKeysInOrder": [
+      "asa_commitment_amount",
+      "individual_subscribername_signaturepage",
+      "entity_authorizedname_signaturepage"
+    ]
+  },
+  "asaFullnameInvestornameAmlquestionnaire": {
+    "typeId": "String",
+    "value": ""
+  },
+  "asaFullnameInvestornameGeneralinfo1": {
+    "typeId": "String",
+    "value": "The Lincoln National Life Insurance Company"
+  },
+  "luxsentityRegulatedstatusPart2Duediligencequestionnaire": {
+    "typeId": "MultipleCheckbox",
+    "selectedKeys": [
+      "yes_luxsentity_regulatedstatus_part2_duediligencequestionnaire"
+    ]
+  },
+  "indiInternationalsupplementsPart1Duediligencequestionnaire": {
+    "typeId": "MultipleCheckbox",
+    "selectedKeys": []
+  },
+  "entityInternationalsupplementsPart1Duediligencequestionnaire": {
+    "typeId": "MultipleCheckbox",
+    "selectedKeys": [
+      "none_entity_internationalsupplements_part1_duediligencequestionnaire"
+    ]
+  },
+  "w9": {
+    "typeId": "CustomCompound",
+    "valueSubFields": {
+      "w9PartiSsn1": {
+        "typeId": "String",
+        "value": ""
+      },
+      "w9PartiEin1": {
+        "typeId": "String",
+        "value": ""
+      },
+      "w9Line2": {
+        "typeId": "String",
+        "value": ""
+      }
     },
-    "asa_fullname_investorname_generalinfo1": {
-      "typeId": "String",
-      "value": "The Lincoln National Life Insurance Company"
-    },
-    "luxsentity_regulatedstatus_part2_duediligencequestionnaire": {
-      "selectedKeys": [
-        "yes_luxsentity_regulatedstatus_part2_duediligencequestionnaire"
-      ],
-      "typeId": "MultipleCheckbox"
-    },
-    "indi_internationalsupplements_part1_duediligencequestionnaire": {
-      "selectedKeys": [],
-      "typeId": "MultipleCheckbox"
-    },
-    "entity_internationalsupplements_part1_duediligencequestionnaire": {
-      "selectedKeys": [
-        "none_entity_internationalsupplements_part1_duediligencequestionnaire"
-      ],
-      "typeId": "MultipleCheckbox"
-    },
-    "w9": {
-      "w9_parti_ssn1": null,
-      "w9_parti_ein1": null,
-      "w9_line2": null
-    }
+    "subFieldKeysInOrder": [
+      "w9_parti_ssn1",
+      "w9_parti_ein1",
+      "w9_line2"
+    ]
   }
 }

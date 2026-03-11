@@ -5,4 +5,7 @@ type name_parts = {
 }
 
 val split_name : string -> name_parts
-val all_mappings : unit -> Mappings.mapping list
+
+val transform :
+  Source_table.source_table_fields_map ->
+  Target_table.target_table_fields_map

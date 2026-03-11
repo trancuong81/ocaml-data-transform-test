@@ -1,5 +1,6 @@
-module M = Mappings
-module JP = Json_path
+module DT = Data_types
+module ST = Source_table
+module TT = Target_table
 
 type name_parts = {
   first_name : string;
@@ -24,131 +25,130 @@ let split_name (fullname : string) : name_parts =
                    |> String.concat " " in
       { first_name = first; middle_name = middle; last_name = last }
 
-(* === TEXTBOX MAPPINGS === *)
+let string_value (st : DT.string_type option) : string =
+  match st with
+  | Some s -> s.value
+  | None -> ""
 
-let commitment_mapping () =
-  M.textbox_mapping
-    ~name:"sf_Agreement_null_Commitment_c"
-    ~input_paths:[
-      ("subdoc", ["subdoc"; "lp_signatory"; "asa_commitment_amount"]);
-    ]
-    ~output_path:["sf_Agreement_null_Commitment_c"]
+let selected_keys (mct : DT.multiple_checkbox_type option) : string list =
+  match mct with
+  | Some mc -> mc.selected_keys
+  | None -> []
 
-let investor_name_mapping () =
-  M.textbox_mapping
-    ~name:"sf_Account_SubscriptionInvestor_Name"
-    ~input_paths:[
-      ("subdoc_aml", ["subdoc"; "asa_fullname_investorname_amlquestionnaire"]);
-      ("subdoc_general", ["subdoc"; "asa_fullname_investorname_generalinfo1"]);
-    ]
-    ~output_path:["sf_Account_SubscriptionInvestor_Name"]
+let first_non_empty (values : string list) : string =
+  match List.find_opt (fun s -> s <> "") values with
+  | Some s -> s
+  | None -> ""
 
-(* === CHECKBOX MAPPINGS === *)
+let map_commitment (src : ST.source_table_fields_map) : DT.money_type =
+  let raw = match src.lp_signatory with
+    | Some lp ->
+      (match lp.value_sub_fields with
+       | Some fields -> string_value fields.asa_commitment_amount
+       | None -> "")
+    | None -> ""
+  in
+  let amount_str = String.split_on_char ',' raw |> String.concat "" in
+  let amount_val = match float_of_string_opt amount_str with
+    | Some f -> f
+    | None -> 0.0
+  in
+  let amount = DT.make_number_type ~type_id:"Number" ~value:amount_val () in
+  let sub_fields = DT.make_money_sub_fields ~amount () in
+  DT.make_money_type ~type_id:"Money" ~value_sub_fields:sub_fields ()
 
-let regulated_status_mapping () =
-  M.checkbox_mapping
-    ~name:"sf_Account_SubscriptionInvestor_WLC_Publicly_Listed_On_A_Stock_Exchange_c"
-    ~input_paths:[
-      ("subdoc", ["subdoc"; "luxsentity_regulatedstatus_part2_duediligencequestionnaire"]);
-    ]
-    ~output_path:["sf_Account_SubscriptionInvestor_WLC_Publicly_Listed_On_A_Stock_Exchange_c"]
-    ~option_map:[
-      ("yes_luxsentity_regulatedstatus_part2_duediligencequestionnaire", "true");
-      ("no_luxsentity_regulatedstatus_part2_duediligencequestionnaire", "false");
-    ]
+let map_investor_name (src : ST.source_table_fields_map) : DT.string_type =
+  let aml = string_value src.asa_fullname_investorname_amlquestionnaire in
+  let general = string_value src.asa_fullname_investorname_generalinfo1 in
+  let value = first_non_empty [aml; general] in
+  DT.make_string_type ~type_id:"String" ~value ()
 
-let international_supplements_mapping () =
-  M.checkbox_mapping
-    ~name:"sf_Agreement_null_WLC_International_Supplements_c"
-    ~input_paths:[
-      ("subdoc_indi", ["subdoc"; "indi_internationalsupplements_part1_duediligencequestionnaire"]);
-      ("subdoc_entity", ["subdoc"; "entity_internationalsupplements_part1_duediligencequestionnaire"]);
-    ]
-    ~output_path:["sf_Agreement_null_WLC_International_Supplements_c"]
-    ~option_map:[
-      ("eea_indi_internationalsupplements_part1_duediligencequestionnaire", "European Economic Area - Supplement");
-      ("uk_indi_internationalsupplements_part1_duediligencequestionnaire", "United Kingdom - Supplement");
-      ("swiss_indi_internationalsupplements_part1_duediligencequestionnaire", "Swiss - Supplement");
-      ("canada_indi_internationalsupplements_part1_duediligencequestionnaire", "Canadian - Supplement");
-      ("japan_indi_internationalsupplements_part1_duediligencequestionnaire", "Japanese - Supplement");
-      ("none_indi_internationalsupplements_part1_duediligencequestionnaire", "No Supplement");
-      ("eea_entity_internationalsupplements_part1_duediligencequestionnaire", "European Economic Area - Supplement");
-      ("uk_entity_internationalsupplements_part1_duediligencequestionnaire", "United Kingdom - Supplement");
-      ("swiss_entity_internationalsupplements_part1_duediligencequestionnaire", "Swiss - Supplement");
-      ("canada_entity_internationalsupplements_part1_duediligencequestionnaire", "Canadian - Supplement");
-      ("japan_entity_internationalsupplements_part1_duediligencequestionnaire", "Japanese - Supplement");
-      ("none_entity_internationalsupplements_part1_duediligencequestionnaire", "No Supplement");
-    ]
+let map_regulated_status (src : ST.source_table_fields_map) : DT.radio_group_type =
+  let option_map = [
+    ("yes_luxsentity_regulatedstatus_part2_duediligencequestionnaire", "true");
+    ("no_luxsentity_regulatedstatus_part2_duediligencequestionnaire", "false");
+  ] in
+  let keys = selected_keys src.luxsentity_regulatedstatus_part2_duediligencequestionnaire in
+  let mapped = List.filter_map (fun k -> List.assoc_opt k option_map) keys in
+  let selected_key = match mapped with
+    | first :: _ -> first
+    | [] -> ""
+  in
+  DT.make_radio_group_type ~type_id:"RadioGroup" ~selected_key ()
 
-(* === CUSTOM MAPPINGS === *)
+let map_international_supplements (src : ST.source_table_fields_map) : DT.multiple_checkbox_type =
+  let option_map = [
+    ("eea_indi_internationalsupplements_part1_duediligencequestionnaire", "European Economic Area - Supplement");
+    ("uk_indi_internationalsupplements_part1_duediligencequestionnaire", "United Kingdom - Supplement");
+    ("swiss_indi_internationalsupplements_part1_duediligencequestionnaire", "Swiss - Supplement");
+    ("canada_indi_internationalsupplements_part1_duediligencequestionnaire", "Canadian - Supplement");
+    ("japan_indi_internationalsupplements_part1_duediligencequestionnaire", "Japanese - Supplement");
+    ("none_indi_internationalsupplements_part1_duediligencequestionnaire", "No Supplement");
+    ("eea_entity_internationalsupplements_part1_duediligencequestionnaire", "European Economic Area - Supplement");
+    ("uk_entity_internationalsupplements_part1_duediligencequestionnaire", "United Kingdom - Supplement");
+    ("swiss_entity_internationalsupplements_part1_duediligencequestionnaire", "Swiss - Supplement");
+    ("canada_entity_internationalsupplements_part1_duediligencequestionnaire", "Canadian - Supplement");
+    ("japan_entity_internationalsupplements_part1_duediligencequestionnaire", "Japanese - Supplement");
+    ("none_entity_internationalsupplements_part1_duediligencequestionnaire", "No Supplement");
+  ] in
+  let indi_keys = selected_keys src.indi_internationalsupplements_part1_duediligencequestionnaire in
+  let entity_keys = selected_keys src.entity_internationalsupplements_part1_duediligencequestionnaire in
+  let all_keys = indi_keys @ entity_keys in
+  let mapped = List.filter_map (fun k -> List.assoc_opt k option_map) all_keys in
+  let unique = List.fold_left
+    (fun acc key -> if List.mem key acc then acc else key :: acc)
+    [] mapped |> List.rev
+  in
+  DT.make_multiple_checkbox_type ~type_id:"MultipleCheckbox" ~selected_keys:unique ()
 
-let signer_name_mapping () =
-  M.custom_mapping
-    ~name:"sf_Agreement_null_Signer_Name"
-    ~input_paths:[
-      ("subdoc_ind", ["subdoc"; "lp_signatory"; "individual_subscribername_signaturepage"]);
-      ("subdoc_ent", ["subdoc"; "lp_signatory"; "entity_authorizedname_signaturepage"]);
-    ]
-    ~output_path:[]
-    ~transform_fn:(fun input ->
-      let values =
-        match input with
-        | `Assoc fields ->
-          List.filter_map
-            (fun (_alias, v) ->
-              match JP.get_path v ["value"] with
-              | Some (`String s) when s <> "" -> Some s
-              | _ -> None)
-            fields
-        | _ -> []
-      in
-      let fullname = String.concat "" values |> String.trim in
-      let parts = split_name fullname in
-      `Assoc [
-        ("sf_Agreement_null_Signer_FirstName",
-         `Assoc [("value", `String parts.first_name)]);
-        ("sf_Agreement_null_Signer_MiddleName",
-         `Assoc [("value", `String parts.middle_name)]);
-        ("sf_Agreement_null_Signer_LastName",
-         `Assoc [("value", `String parts.last_name)]);
-      ])
+let map_signer_name (src : ST.source_table_fields_map)
+    : DT.string_type * DT.string_type * DT.string_type =
+  let fullname = match src.lp_signatory with
+    | Some lp ->
+      (match lp.value_sub_fields with
+       | Some fields ->
+         let ind = string_value fields.individual_subscribername_signaturepage in
+         let ent = string_value fields.entity_authorizedname_signaturepage in
+         first_non_empty [ind; ent]
+       | None -> "")
+    | None -> ""
+  in
+  let parts = split_name fullname in
+  ( DT.make_string_type ~type_id:"String" ~value:parts.first_name (),
+    DT.make_string_type ~type_id:"String" ~value:parts.middle_name (),
+    DT.make_string_type ~type_id:"String" ~value:parts.last_name () )
 
-let w9_tin_type_mapping () =
-  M.custom_mapping
-    ~name:"sf_TaxForm_W9_US_TIN_Type_c"
-    ~input_paths:[
-      ("w9_ssn", ["subdoc"; "w9"; "w9_parti_ssn1"]);
-      ("w9_ein", ["subdoc"; "w9"; "w9_parti_ein1"]);
-      ("w9_line2", ["subdoc"; "w9"; "w9_line2"]);
-    ]
-    ~output_path:["sf_TaxForm_W9_US_TIN_Type_c"]
-    ~transform_fn:(fun input ->
-      let w9_line2_value =
-        match input with
-        | `Assoc fields ->
-          (match List.assoc_opt "w9_line2" fields with
-           | Some v -> JP.get_string_or_empty v ["value"]
-           | None -> "")
-        | _ -> ""
-      in
-      if w9_line2_value = "" then
-        let has_ssn =
-          match input with
-          | `Assoc fields ->
-            (match List.assoc_opt "w9_ssn" fields with
-             | Some v -> JP.get_string_or_empty v ["value"] <> ""
-             | None -> false)
-          | _ -> false
-        in
-        `Assoc [("value", `String (if has_ssn then "SSN" else "EIN"))]
-      else
-        `Assoc [("value", `String "")])
+let map_w9_tin_type (src : ST.source_table_fields_map) : DT.radio_group_type =
+  match src.w9 with
+  | Some w9_field ->
+    (match w9_field.value_sub_fields with
+     | Some fields ->
+       let line2 = string_value fields.w9_line2 in
+       if line2 <> "" then
+         DT.make_radio_group_type ~type_id:"RadioGroup" ~selected_key:"" ()
+       else
+         let has_ssn = string_value fields.w9_parti_ssn1 <> "" in
+         let key = if has_ssn then "SSN" else "EIN" in
+         DT.make_radio_group_type ~type_id:"RadioGroup" ~selected_key:key ()
+     | None ->
+       DT.make_radio_group_type ~type_id:"RadioGroup" ~selected_key:"EIN" ())
+  | None ->
+    DT.make_radio_group_type ~type_id:"RadioGroup" ~selected_key:"EIN" ()
 
-let all_mappings () = [
-  commitment_mapping ();
-  investor_name_mapping ();
-  regulated_status_mapping ();
-  international_supplements_mapping ();
-  signer_name_mapping ();
-  w9_tin_type_mapping ();
-]
+let transform (src : ST.source_table_fields_map) : TT.target_table_fields_map =
+  let commitment = map_commitment src in
+  let investor_name = map_investor_name src in
+  let regulated_status = map_regulated_status src in
+  let intl_supplements = map_international_supplements src in
+  let (first, middle, last) = map_signer_name src in
+  let tin_type = map_w9_tin_type src in
+  TT.make_target_table_fields_map
+    ~sf_agreement_null_commitment_c:commitment
+    ~sf_account_subscription_investor_name:investor_name
+    ~sf_account_subscription_investor_wlc_publicly_listed_on_a_stock_exchange_c:regulated_status
+    ~sf_agreement_null_wlc_international_supplements_c:intl_supplements
+    ~sf_agreement_null_signer_first_name:first
+    ~sf_agreement_null_signer_middle_name:middle
+    ~sf_agreement_null_signer_last_name:last
+    ~sf_tax_form_w9_us_tin_type_c:tin_type
+    ()
