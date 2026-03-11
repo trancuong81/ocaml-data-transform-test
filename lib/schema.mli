@@ -16,3 +16,6 @@ val load_data_type_constants : unit -> data_type_constants
 val find_type_constants : data_type_constants -> string -> type_constants option
 val has_regex : type_constants -> bool
 val type_count : data_type_constants -> int
+
+val load_source_table_schema : unit -> Source_table.source_table_schema
+val load_target_table_schema : unit -> Target_table.target_table_schema

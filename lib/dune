@@ -24,3 +24,17 @@
   (progn
    (run ocaml-protoc --binary --yojson -I ../proto --ml_out=. ../proto/table_schema.proto)
    (run sed -i "" "s/assoc :=$/assoc := (/" table_schema.ml))))
+
+; Generate OCaml from source_table.proto
+(rule
+ (targets source_table.ml source_table.mli)
+ (deps ../proto/tables/source_table.proto ../proto/data_types.proto)
+ (action
+  (run ocaml-protoc --binary --yojson -I ../proto --ml_out=. ../proto/tables/source_table.proto)))
+
+; Generate OCaml from target_table.proto
+(rule
+ (targets target_table.ml target_table.mli)
+ (deps ../proto/tables/target_table.proto ../proto/data_types.proto)
+ (action
+  (run ocaml-protoc --binary --yojson -I ../proto --ml_out=. ../proto/tables/target_table.proto)))

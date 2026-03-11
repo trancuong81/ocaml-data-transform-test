@@ -76,6 +76,28 @@ let find_proto_dir () =
          "Cannot find proto/ directory. Set DUNE_SOURCEROOT or run from \
           project root.")
 
+let find_tables_dir () =
+  match Sys.getenv_opt "DUNE_SOURCEROOT" with
+  | Some root ->
+    let dir = Filename.concat (Filename.concat root "proto") "tables" in
+    if Sys.file_exists dir && Sys.is_directory dir then dir
+    else failwith ("DUNE_SOURCEROOT/proto/tables not found: " ^ dir)
+  | None ->
+    let candidates =
+      [
+        "proto/tables";
+        "../proto/tables";
+        "../../proto/tables";
+      ]
+    in
+    (match
+       List.find_opt (fun d -> Sys.file_exists d && Sys.is_directory d) candidates
+     with
+     | Some dir -> dir
+     | None ->
+       failwith
+         "Cannot find proto/tables/ directory. Set DUNE_SOURCEROOT or run from project root.")
+
 let load_data_type_constants () : data_type_constants =
   let path = Filename.concat (find_proto_dir ()) "data_types_constants.json" in
   let json = Yojson.Safe.from_file path in
@@ -90,4 +112,38 @@ let find_type_constants (m : data_type_constants) (type_id : string) =
 
 let has_regex (tc : type_constants) = Option.is_some tc.regex
 let type_count (m : data_type_constants) = SMap.cardinal m
+
+(* Convert snake_case JSON keys to lowerCamelCase recursively.
+   ocaml-protoc only accepts camelCase in JSON, but we want constants files
+   to use snake_case field names matching the proto definitions. *)
+let snake_to_camel (s : string) : string =
+  let buf = Buffer.create (String.length s) in
+  let capitalize_next = ref false in
+  String.iter (fun c ->
+    if c = '_' then
+      capitalize_next := true
+    else if !capitalize_next then begin
+      Buffer.add_char buf (Char.uppercase_ascii c);
+      capitalize_next := false
+    end else
+      Buffer.add_char buf c
+  ) s;
+  Buffer.contents buf
+
+let rec camelcase_keys (json : Yojson.Basic.t) : Yojson.Basic.t =
+  match json with
+  | `Assoc pairs ->
+    `Assoc (List.map (fun (k, v) -> (snake_to_camel k, camelcase_keys v)) pairs)
+  | `List items -> `List (List.map camelcase_keys items)
+  | other -> other
+
+let load_source_table_schema () : Source_table.source_table_schema =
+  let path = Filename.concat (find_tables_dir ()) "source_table_constants.json" in
+  let json = Yojson.Basic.from_file path |> camelcase_keys in
+  Source_table.decode_json_source_table_schema json
+
+let load_target_table_schema () : Target_table.target_table_schema =
+  let path = Filename.concat (find_tables_dir ()) "target_table_constants.json" in
+  let json = Yojson.Basic.from_file path |> camelcase_keys in
+  Target_table.decode_json_target_table_schema json
 
